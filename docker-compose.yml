@@ -1,0 +1,53 @@
+version: '3'
+services:
+  gyazo:
+    container_name: gyazo
+    build: ./gyazo/
+    expose:
+      - "80"
+    volumes:
+    -  gyazo_data:/usr/local/apache2/htdocs/data
+    -  gyazo_db:/usr/local/apache2/htdocs/db
+    environment:
+    - password=${password}
+    networks:
+      gyazo_network:
+          ipv4_address: 172.30.0.2
+      default:
+          {}
+  share_proxy:
+    container_name: share_proxy
+    build: ./share/
+    expose:
+      - "80"
+    networks:
+      gyazo_network:
+          ipv4_address: 172.30.0.3
+      default:
+          {}
+  gallery:
+    container_name: gallery
+    build: ./go_gallery/
+    expose:
+      - "80"
+    volumes:
+    -   gyazo_data:/go/src/work/data
+    networks:
+      gyazo_network:
+          ipv4_address: 172.30.0.4
+
+
+networks:
+  gyazo_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24
+  default:
+    external:
+      name: shared
+
+volumes:
+  gyazo_data:
+  gyazo_db:
